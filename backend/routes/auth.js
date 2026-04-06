@@ -2,15 +2,22 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const passport = require("passport");
 
-// Generate JWT token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      name: user.name,        // ✅ Added
+      photo: user.photo || "" // ✅ Added
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
 };
 
-// @route   POST /api/auth/register
-// @desc    Register new user
-// @access  Public
+// @route   POST /auth/register
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
@@ -18,9 +25,7 @@ router.post('/register', async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please fill all required fields' });
     }
-   if (!email.endsWith('@vnrvjiet.in')) {
-  return res.status(400).json({ message: 'Only VNRVJIET email addresses (@vnrvjiet.in) are allowed' });
-}
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email' });
@@ -33,16 +38,14 @@ router.post('/register', async (req, res) => {
       name: user.name,
       email: user.email,
       department: user.department,
-      token: generateToken(user._id),
+      token: generateToken(user),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// @route   POST /api/auth/login
-// @desc    Login user
-// @access  Public
+// @route   POST /auth/login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,11 +64,33 @@ router.post('/login', async (req, res) => {
       name: user.name,
       email: user.email,
       department: user.department,
-      token: generateToken(user._id),
+      token: generateToken(user),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+// @route   GET /auth/google
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  })
+);
+
+// @route   GET /auth/google/callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/login",
+    session: false,
+  }),
+  (req, res) => {
+    const token = generateToken(req.user); // ✅ Uses updated generateToken
+    res.redirect(`http://localhost:3000/auth-success?token=${token}`);
+  }
+);
 
 module.exports = router;

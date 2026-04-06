@@ -30,10 +30,30 @@ export default function Navbar() {
     </Link>
   );
 
+  // ✅ Avatar component — shows photo if available, else first letter
+  const Avatar = ({ size = "w-8 h-8" }) => {
+    if (user?.photo) {
+      return (
+        <img
+          src={user.photo}
+          alt={user.name || user.email}
+          referrerPolicy="no-referrer"
+          className={`${size} rounded-full object-cover border border-ink-600`}
+        />
+      );
+    }
+    return (
+      <div className={`${size} rounded-full bg-ink-700 border border-ink-600 flex items-center justify-center text-amber-400 font-semibold text-xs`}>
+        {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+      </div>
+    );
+  };
+
   return (
     <nav className="sticky top-0 z-50 border-b border-ink-800 bg-ink-950/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
@@ -62,18 +82,27 @@ export default function Navbar() {
                 </Link>
                 <div className="relative group">
                   <button className="flex items-center gap-2 text-sm text-ink-300 hover:text-white transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-ink-700 border border-ink-600 flex items-center justify-center text-amber-400 font-semibold text-xs">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-medium">{user.name?.split(' ')[0]}</span>
+                    {/* ✅ Avatar with photo or initial */}
+                    <Avatar />
+                    <span className="font-medium">
+                      {user.name?.split(' ')[0] || user.email?.split('@')[0]}
+                    </span>
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
+
+                  {/* Dropdown */}
                   <div className="absolute right-0 mt-2 w-44 bg-ink-800 border border-ink-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-ink-700">
-                      <p className="text-xs text-ink-400">Signed in as</p>
-                      <p className="text-sm font-medium text-white truncate">{user.email}</p>
+                    <div className="px-4 py-3 border-b border-ink-700 flex items-center gap-3">
+                      {/* ✅ Avatar also in dropdown */}
+                      <Avatar size="w-8 h-8" />
+                      <div className="overflow-hidden">
+                        {user.name && (
+                          <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                        )}
+                        <p className="text-xs text-ink-400 truncate">{user.email}</p>
+                      </div>
                     </div>
                     <button
                       onClick={handleLogout}
@@ -115,11 +144,26 @@ export default function Navbar() {
             {navLink('/', 'Explore')}
             {user && navLink('/dashboard', 'Dashboard')}
             {user && navLink('/requests', 'Requests')}
+
             <div className="pt-3 border-t border-ink-800 flex flex-col gap-2">
               {user ? (
                 <>
-                  <Link to="/upload" onClick={() => setMenuOpen(false)} className="btn-primary text-center">+ New Project</Link>
-                  <button onClick={handleLogout} className="btn-danger text-center">Sign Out</button>
+                  {/* ✅ Mobile user info with avatar */}
+                  <div className="flex items-center gap-3 px-1 pb-2">
+                    <Avatar size="w-9 h-9" />
+                    <div className="overflow-hidden">
+                      {user.name && (
+                        <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                      )}
+                      <p className="text-xs text-ink-400 truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link to="/upload" onClick={() => setMenuOpen(false)} className="btn-primary text-center">
+                    + New Project
+                  </Link>
+                  <button onClick={handleLogout} className="btn-danger text-center">
+                    Sign Out
+                  </button>
                 </>
               ) : (
                 <>

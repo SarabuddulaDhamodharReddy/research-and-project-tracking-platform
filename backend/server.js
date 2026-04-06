@@ -6,17 +6,27 @@ const path = require('path');
 
 dotenv.config();
 
+// ✅ Import passport AFTER dotenv.config() so env vars are available
+const passport = require("passport");
+require("./config/passport");
+
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", // ✅ Explicit origin instead of wildcard
+  credentials: true,               // ✅ Required for OAuth redirects
+}));
+
 app.use(express.json());
+app.use(passport.initialize()); // ✅ Moved BEFORE routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));   // ✅ For normal login/register
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/requests', require('./routes/requests'));
+app.use("/auth", require("./routes/auth"));       // ✅ For Google OAuth routes
 
 // Health check
 app.get('/', (req, res) => {

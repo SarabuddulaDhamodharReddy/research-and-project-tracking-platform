@@ -40,3 +40,13 @@ build/
 # IDE files
 # ========================
 .vscode/
+# cache files
+.cache/
+*.cache
+
+# lock files (optional - depends on team)
+# package-lock.json
+# yarn.lock
+
+# coverage (testing)
+coverage/

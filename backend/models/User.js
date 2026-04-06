@@ -15,10 +15,20 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    googleId: {
+      type: String,
+      default: null,
+    },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function () {
+        return !this.googleId; // ✅ Password only required if no googleId
+      },
       minlength: 6,
+    },
+    photo: {
+      type: String,      // ✅ ADDED - stores Google profile picture URL
+      default: "",
     },
     department: {
       type: String,
@@ -29,14 +39,23 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+userSchema.pre("save", async function (next) {
+  try {
+    if (!this.password) return next();           // ✅ Skip for Google users
+    if (!this.isModified("password")) return next(); // ✅ Skip if not changed
+
+    if (typeof this.password !== "string") {
+      return next(new Error("Password must be a string"));
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Compare password method
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
