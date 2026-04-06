@@ -12,10 +12,12 @@ require("./config/passport");
 
 const app = express();
 
-// Middleware
 app.use(cors({
-  origin: "http://localhost:3000", // ✅ Explicit origin instead of wildcard
-  credentials: true,               // ✅ Required for OAuth redirects
+  origin: [
+    "http://localhost:3000",
+    "https://research-and-project-tracking-platform-sb8i-dyhsktugg.vercel.app"
+  ],
+  credentials: true,
 }));
 
 app.use(express.json());

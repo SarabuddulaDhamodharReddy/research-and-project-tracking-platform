@@ -89,7 +89,7 @@ router.get(
   }),
   (req, res) => {
     const token = generateToken(req.user); // ✅ Uses updated generateToken
-    res.redirect(`http://localhost:3000/auth-success?token=${token}`);
+    res.redirect(`https://research-and-project-tracking-platform-sb8i-dyhsktugg.vercel.app/auth-success?token=${token}`);
   }
 );
 
