@@ -71,8 +71,8 @@ const handleSubmit = async (e) => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    // ✅ FIX HERE (IMPORTANT)
-    const projectId = res.data?.data?._id;
+    // ✅ Backend returns project directly, not wrapped in { data: ... }
+    const projectId = res.data?._id || res.data?.data?._id;
 
     if (!projectId) {
       throw new Error("Project ID not returned from server");
