@@ -162,7 +162,10 @@ export default function ProjectDetailPage() {
                     <p className="text-xs text-ink-500">Click to view or download</p>
                   </div>
                   <button
-                    onClick={() => window.open(project.fileUrl, '_blank', 'noopener,noreferrer')}
+                    onClick={() => {
+                      const viewUrl = project.fileUrl.replace('/raw/upload/', '/image/upload/');
+                      window.open(viewUrl, '_blank', 'noopener,noreferrer');
+                    }}
                     className="btn-primary text-xs px-3 py-2 shrink-0"
                   >
                     View PDF
