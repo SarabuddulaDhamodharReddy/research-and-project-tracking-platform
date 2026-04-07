@@ -161,14 +161,12 @@ export default function ProjectDetailPage() {
                     <p className="text-sm font-medium text-white truncate">Research Paper PDF</p>
                     <p className="text-xs text-ink-500">Click to view or download</p>
                   </div>
-                  <a
-                    href={`http://localhost:5000${project.fileUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => window.open(project.fileUrl, '_blank', 'noopener,noreferrer')}
                     className="btn-primary text-xs px-3 py-2 shrink-0"
                   >
                     View PDF
-                  </a>
+                  </button>
                 </div>
               </div>
             ) : (
