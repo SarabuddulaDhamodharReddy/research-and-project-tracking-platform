@@ -11,7 +11,7 @@ import UploadProjectPage from './pages/UploadProjectPage';
 import EditProjectPage from './pages/EditProjectPage';
 import CollaborationRequestsPage from './pages/CollaborationRequestsPage';
 import AuthSuccess from "./pages/AuthSuccess";
-
+import VerifyEmailPage from './pages/VerifyEmailPage';
 // ✅ Redirects to /dashboard if already logged in
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -46,7 +46,7 @@ function AppRoutes() {
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
-
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         {/* ✅ Must be before wildcard */}
         <Route path="/auth-success" element={<AuthSuccess />} />
 

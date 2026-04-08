@@ -9,6 +9,8 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const verified = searchParams.get('verified');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,15 +26,42 @@ export default function LoginPage() {
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      const msg = err.response?.data?.message || 'Login failed';
+      const requiresVerification = err.response?.data?.requiresVerification;
+      const userEmail = err.response?.data?.email;
+
+      if (requiresVerification) {
+        setError(
+          <span>
+            Please verify your email first.{' '}
+            <button
+              type="button"
+              onClick={() => handleResendVerification(userEmail || form.email)}
+              className="text-amber-400 underline hover:text-amber-300"
+            >
+              Resend verification email
+            </button>
+          </span>
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
   };
+  const handleResendVerification = async (email) => {
+    try {
+      await api.post('/auth/resend-verification', { email });
+      setError('Verification email resent! Please check your inbox.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to resend email');
+    }
+  };
 
-const handleGoogleLogin = () => {
-  window.location.href = "https://research-and-project-tracking-platform.onrender.com/auth/google";
-};
+  const handleGoogleLogin = () => {
+    window.location.href = "https://research-and-project-tracking-platform.onrender.com/auth/google";
+  };
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md fade-up">
@@ -58,7 +87,11 @@ const handleGoogleLogin = () => {
               {error}
             </div>
           )}
-
+          {verified && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg px-4 py-3 text-sm mb-5">
+              ✅ Email verified successfully! You can now sign in.
+            </div>
+          )}
           {/* 🔐 FORM */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -96,14 +129,14 @@ const handleGoogleLogin = () => {
             </button>
           </form>
 
-          {/* 🔥 Divider */}
+          {/*Divider */}
           <div className="flex items-center my-5">
             <div className="flex-1 h-px bg-ink-700"></div>
             <span className="px-3 text-xs text-ink-400">OR</span>
             <div className="flex-1 h-px bg-ink-700"></div>
           </div>
 
-          {/* 🔥 GOOGLE BUTTON (OUTSIDE FORM) */}
+          {/* GOOGLE BUTTON (OUTSIDE FORM) */}
           <div>
             <button
               type="button"

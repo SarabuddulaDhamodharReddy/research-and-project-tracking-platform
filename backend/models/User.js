@@ -22,32 +22,42 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: function () {
-        return !this.googleId; // ✅ Password only required if no googleId
+        return !this.googleId;
       },
       minlength: 6,
     },
     photo: {
-      type: String,      // ✅ ADDED - stores Google profile picture URL
+      type: String,
       default: "",
     },
     department: {
       type: String,
       default: '',
     },
+    // ✅ Email verification fields
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      default: null,
+    },
+    verificationTokenExpiry: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-// Hash password before saving
 userSchema.pre("save", async function (next) {
   try {
-    if (!this.password) return next();           // ✅ Skip for Google users
-    if (!this.isModified("password")) return next(); // ✅ Skip if not changed
-
+    if (!this.password) return next();
+    if (!this.isModified("password")) return next();
     if (typeof this.password !== "string") {
       return next(new Error("Password must be a string"));
     }
-
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();

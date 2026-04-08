@@ -22,11 +22,13 @@ passport.use(
             googleId: profile.id,
             password: null,
             photo: profile.photos?.[0]?.value || "",
+            isVerified: true, // ✅ Google already verified their email
           });
         } else {
           if (!user.googleId) {
             user.googleId = profile.id;
             user.photo = profile.photos?.[0]?.value || "";
+            user.isVerified = true; // ✅ Mark verified when linking Google
             await user.save();
           }
         }
