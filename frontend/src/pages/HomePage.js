@@ -23,19 +23,31 @@ export default function HomePage() {
   const [year, setYear] = useState('All');
   const [search, setSearch] = useState('');
 
-  const fetchProjects = async () => {
+ // Replace your fetchProjects function with this:
+const fetchProjects = async () => {
+  try {
+    setLoading(true);
+    setError('');
+    const params = {};
+    if (dept !== 'All') params.department = dept;
+    if (year !== 'All') params.year = year;
+    const res = await api.get('/projects', { params });
+    setProjects(Array.isArray(res.data) ? res.data : res.data.data || res.data.projects || []);
+  } catch (err) {
+    // ✅ Retry once automatically on failure (handles cold start)
     try {
-      setLoading(true);
       const params = {};
       if (dept !== 'All') params.department = dept;
       if (year !== 'All') params.year = year;
       const res = await api.get('/projects', { params });
-      setProjects(Array.isArray(res.data) ? res.data : res.data.data || res.data.projects || []);    } catch (err) {
-      setError('Failed to load projects');
-    } finally {
-      setLoading(false);
+      setProjects(Array.isArray(res.data) ? res.data : res.data.data || res.data.projects || []);
+    } catch (retryErr) {
+      setError('Server is warming up, please wait 30 seconds and retry');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchProjects();
