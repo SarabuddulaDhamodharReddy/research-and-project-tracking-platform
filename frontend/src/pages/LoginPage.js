@@ -6,15 +6,25 @@ import api from '../utils/api';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const verified = searchParams.get('verified');
+
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
-  const verified = searchParams.get('verified');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
+  };
+
+  const handleResendVerification = async (email) => {
+    try {
+      await api.post('/auth/resend-verification', { email });
+      setError('Verification email resent! Please check your inbox.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to resend email');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -26,14 +36,14 @@ export default function LoginPage() {
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed';
       const requiresVerification = err.response?.data?.requiresVerification;
       const userEmail = err.response?.data?.email;
+      const msg = err.response?.data?.message || 'Login failed';
 
       if (requiresVerification) {
         setError(
           <span>
-            Please verify your email first.{' '}
+            {msg}{' '}
             <button
               type="button"
               onClick={() => handleResendVerification(userEmail || form.email)}
@@ -50,24 +60,15 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-  const handleResendVerification = async (email) => {
-    try {
-      await api.post('/auth/resend-verification', { email });
-      setError('Verification email resent! Please check your inbox.');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to resend email');
-    }
-  };
 
   const handleGoogleLogin = () => {
     window.location.href = "https://research-and-project-tracking-platform.onrender.com/auth/google";
   };
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md fade-up">
-
         <div className="card">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,23 +77,22 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="font-display text-2xl font-bold text-white">Welcome back</h1>
-            <p className="text-ink-400 text-sm mt-1">
-              Sign in to your ResearchHub account
-            </p>
+            <p className="text-ink-400 text-sm mt-1">Sign in to your ResearchHub account</p>
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm mb-5">
-              {error}
-            </div>
-          )}
+          {/* ✅ Show success message after email verification */}
           {verified && (
             <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg px-4 py-3 text-sm mb-5">
               ✅ Email verified successfully! You can now sign in.
             </div>
           )}
-          {/* 🔐 FORM */}
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm mb-5">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Email Address</label>
@@ -129,14 +129,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/*Divider */}
           <div className="flex items-center my-5">
             <div className="flex-1 h-px bg-ink-700"></div>
             <span className="px-3 text-xs text-ink-400">OR</span>
             <div className="flex-1 h-px bg-ink-700"></div>
           </div>
 
-          {/* GOOGLE BUTTON (OUTSIDE FORM) */}
           <div>
             <button
               type="button"
@@ -152,7 +150,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Footer */}
           <p className="text-center text-sm text-ink-400 mt-6">
             Don't have an account?{' '}
             <Link to="/register" className="text-amber-400 hover:text-amber-300 font-medium">

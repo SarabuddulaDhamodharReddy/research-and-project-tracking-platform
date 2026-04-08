@@ -11,8 +11,8 @@ import UploadProjectPage from './pages/UploadProjectPage';
 import EditProjectPage from './pages/EditProjectPage';
 import CollaborationRequestsPage from './pages/CollaborationRequestsPage';
 import AuthSuccess from "./pages/AuthSuccess";
-import VerifyEmailPage from './pages/VerifyEmailPage';
-// ✅ Redirects to /dashboard if already logged in
+import VerifyEmailPage from "./pages/VerifyEmailPage"; // ✅ NEW
+
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -23,7 +23,6 @@ const PublicRoute = ({ children }) => {
   return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
-// ✅ Redirects to /login if not logged in
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -40,22 +39,15 @@ function AppRoutes() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
-
-        {/* ✅ Public routes - redirect to dashboard if already logged in */}
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        {/* ✅ Must be before wildcard */}
         <Route path="/auth-success" element={<AuthSuccess />} />
-
-        {/* ✅ Protected routes */}
+        <Route path="/verify-email" element={<VerifyEmailPage />} /> {/* ✅ NEW */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/upload" element={<ProtectedRoute><UploadProjectPage /></ProtectedRoute>} />
         <Route path="/projects/:id/edit" element={<ProtectedRoute><EditProjectPage /></ProtectedRoute>} />
         <Route path="/requests" element={<ProtectedRoute><CollaborationRequestsPage /></ProtectedRoute>} />
-
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

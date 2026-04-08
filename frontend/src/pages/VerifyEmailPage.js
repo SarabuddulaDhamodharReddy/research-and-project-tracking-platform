@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="card w-full max-w-md text-center">
+      <div className="card w-full max-w-md text-center p-8">
         {status === "verifying" && (
           <>
             <div className="w-12 h-12 rounded-full border-4 border-amber-400 border-t-transparent animate-spin mx-auto mb-4" />

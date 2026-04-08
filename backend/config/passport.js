@@ -12,7 +12,6 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
-
         let user = await User.findOne({ email });
 
         if (!user) {
@@ -22,7 +21,7 @@ passport.use(
             googleId: profile.id,
             password: null,
             photo: profile.photos?.[0]?.value || "",
-            isVerified: true, // ✅ Google already verified their email
+            isVerified: true, // ✅ Google already verified
           });
         } else {
           if (!user.googleId) {
