@@ -30,8 +30,7 @@ export default function HomePage() {
       if (dept !== 'All') params.department = dept;
       if (year !== 'All') params.year = year;
       const res = await api.get('/projects', { params });
-      setProjects(res.data.projects || res.data.data.projects || []);
-    } catch (err) {
+      setProjects(Array.isArray(res.data) ? res.data : res.data.data || res.data.projects || []);    } catch (err) {
       setError('Failed to load projects');
     } finally {
       setLoading(false);
