@@ -12,8 +12,9 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: 'research-platform',
-    allowed_formats: ['pdf'],
-    resource_type: 'raw', // ✅ Required for PDFs
+    resource_type: 'raw',
+    format: 'pdf',           // ✅ Force PDF format
+    type: 'upload',
   },
 });
 
