@@ -4,16 +4,17 @@ const Project = require('../models/Project');
 const { cloudinary, upload } = require('../config/cloudinary');
 const { protect } = require('../middleware/auth');
 
-// Helper: extract Cloudinary public_id from secure_url
+// ─── Helper: extract Cloudinary public_id from secure_url ─────────────────────
 function getPublicId(fileUrl) {
   if (!fileUrl) return null;
+  // e.g. https://res.cloudinary.com/<cloud>/raw/upload/v123/research-platform/abc123
   const parts = fileUrl.split('/');
   const folder = parts[parts.length - 2];
   const filename = parts[parts.length - 1].split('.')[0];
   return `${folder}/${filename}`;
 }
 
-// GET /api/projects
+// ─── GET /api/projects ─────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const { department, year, status, search } = req.query;
@@ -41,8 +42,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/projects/user/mine
-// This route is now safe because 'protect' is properly defined!
+// ─── GET /api/projects/user/mine ───────────────────────────────────────────────
+// ⚠️ Must be BEFORE /:id or Express will treat "mine" as an id
 router.get('/user/mine', protect, async (req, res) => {
   try {
     const projects = await Project.find({
@@ -60,7 +61,7 @@ router.get('/user/mine', protect, async (req, res) => {
   }
 });
 
-// GET /api/projects/:id
+// ─── GET /api/projects/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
@@ -78,7 +79,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/projects
+// ─── POST /api/projects ────────────────────────────────────────────────────────
 router.post('/', protect, upload.single('file'), async (req, res) => {
   try {
     const { title, description, department, year, status } = req.body;
@@ -87,6 +88,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       return res.status(400).json({ message: 'Please fill all required fields' });
     }
 
+    // req.file.path is the Cloudinary secure_url (persists on Render)
     const fileUrl = req.file ? req.file.path : '';
 
     const project = await Project.create({
@@ -107,7 +109,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
   }
 });
 
-// PUT /api/projects/:id
+// ─── PUT /api/projects/:id ───
 router.put('/:id', protect, upload.single('file'), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -131,11 +133,13 @@ router.put('/:id', protect, upload.single('file'), async (req, res) => {
     if (description) project.description = description;
     if (status) project.status = status;
 
+    // Only owner can change department/year
     if (isOwner) {
       if (department) project.department = department;
       if (year) project.year = Number(year);
     }
 
+    // If new file uploaded — delete old from Cloudinary, store new URL
     if (req.file) {
       const oldPublicId = getPublicId(project.fileUrl);
       if (oldPublicId) {
@@ -154,7 +158,7 @@ router.put('/:id', protect, upload.single('file'), async (req, res) => {
   }
 });
 
-// DELETE /api/projects/:id
+// ─── DELETE /api/projects/:id ──────────────────────────────────────────────────
 router.delete('/:id', protect, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -167,6 +171,7 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(403).json({ message: 'Only owner can delete this project' });
     }
 
+    // Delete file from Cloudinary
     const publicId = getPublicId(project.fileUrl);
     if (publicId) {
       await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
@@ -179,7 +184,7 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
-// POST /api/projects/:id/collaborators
+// ─── POST /api/projects/:id/collaborators ──────────────────────────────────────
 router.post('/:id/collaborators', protect, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
