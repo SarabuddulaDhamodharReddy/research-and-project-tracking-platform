@@ -10,19 +10,22 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('mine');
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await api.get('/projects/user/mine');
-        setProjects(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProjects();
-  }, []);
+useEffect(() => {
+  const fetchProjects = async () => {
+    try {
+      const res = await api.get('/projects/user/mine');
+      // ✅ Handle both array and wrapped response
+      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+      setProjects(data);
+    } catch (err) {
+      console.error(err);
+      setProjects([]); // ✅ Always set to array on error
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchProjects();
+}, []);
 
   const myProjects = projects.filter((p) => p.ownerId?._id === user._id);
   const collabProjects = projects.filter((p) => p.ownerId?._id !== user._id);
