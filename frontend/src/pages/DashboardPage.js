@@ -27,8 +27,8 @@ useEffect(() => {
   fetchProjects();
 }, []);
 
-  const myProjects = projects.filter((p) => p.ownerId?._id === user._id);
-  const collabProjects = projects.filter((p) => p.ownerId?._id !== user._id);
+const myProjects = (projects || []).filter((p) => p.ownerId?._id === user?._id);
+const collabProjects = (projects || []).filter((p) => p.ownerId?._id !== user?._id);
 
   const displayProjects = activeTab === 'mine' ? myProjects : collabProjects;
 
